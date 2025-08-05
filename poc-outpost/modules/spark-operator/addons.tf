@@ -290,32 +290,53 @@ resource "aws_iam_policy" "s3tables_policy" {
   })
 }
 
-resource "kubernetes_pod" "init_s3_directory_spark_event_logs" {
+resource "kubernetes_job" "init_s3_directory_spark_event_logs" {
   metadata {
     name      = "awscli-init-s3"
-    namespace = "${local.spark_history_server_namespace}"
+    namespace = local.spark_history_server_namespace
+
+    annotations = {
+      "sidecar.istio.io/inject" = "false"
+    }
   }
 
   spec {
-    service_account_name = "${local.spark_history_server_service_account}"
+    template {
+      metadata {
+        annotations = {
+          "sidecar.istio.io/inject" = "false"
+        }
+      }
 
-    container {
-      name  = "awscli"
-      image = "amazon/aws-cli:latest"
+      spec {
+        service_account_name = local.spark_history_server_service_account
 
-      command = [
-        "sh", "-c",
-        <<-EOT
-          aws s3 cp /etc/hostname s3://${module.s3_bucket.s3_bucket_id}/spark-event-logs/.init
-        EOT
-      ]
+        container {
+          name  = "awscli"
+          image = "amazon/aws-cli:latest"
+
+          command = [
+            "sh",
+            "-c",
+            "aws s3 cp /etc/hostname s3://${module.s3_bucket.s3_bucket_id}/spark-event-logs/.init"
+          ]
+        }
+
+        restart_policy = "Never"
+      }
     }
 
-    restart_policy = "Never"
+    backoff_limit = 1
+  }
+
+  timeouts {
+    create = "5m"
+    delete = "2m"
   }
 
   depends_on = [module.eks_data_addons]
 }
+
 
 
 #---------------------------------------------------------------
@@ -328,7 +349,8 @@ module "virtual_service" {
   cluster_issuer_name = var.cluster_issuer_name
   virtual_service_name = local.spark_history_server_name
   dns_name = "${local.spark_history_server_name}.${local.main_domain}"
-  service_name = "spark-history-server"
+  # gateway_name = "kubeflow-gateway"
+  service_name = "oauth2-proxy"
   service_port = 80
   namespace = local.spark_history_server_namespace
 

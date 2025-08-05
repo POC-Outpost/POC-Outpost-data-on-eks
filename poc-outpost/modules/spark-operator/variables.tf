@@ -73,3 +73,18 @@ variable "cognito_custom_domain" {
   description = "Custom domain for Cognito user pool"
   type        = string
 }
+
+variable "secret_keycloak_spark_history" {
+    description = "Secret containing Keycloak credentials for Spark History Server"
+    type        = string
+}
+
+variable "client_keycloak_spark_history" {
+    description = "Client ID for Keycloak Spark History Server"
+    type        = string
+}
+
+variable "keycloak_orange_issuer_url" {
+    description = "Keycloak issuer URL for Orange"
+    type        = string
+}

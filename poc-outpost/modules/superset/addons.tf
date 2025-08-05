@@ -1,4 +1,8 @@
 
+resource "random_password" "admin_password" {
+  length  = 16
+  special = false
+}
 
 module "eks_data_addons" {
   source  = "aws-ia/eks-data-addons/aws"
@@ -21,6 +25,13 @@ module "eks_data_addons" {
 
         redis_user = local.superset_name
         redis_host = try(module.elasticache.cluster_cache_nodes[0].address, "failed")
+
+        admin_password = random_password.admin_password.result
+
+        #connecteurs
+        trino_password = local.trino_password
+        trino_url = local.trino_url
+
 
       })
     ]

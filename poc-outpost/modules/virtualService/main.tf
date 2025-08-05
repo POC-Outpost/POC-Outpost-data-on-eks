@@ -14,6 +14,7 @@ resource "kubectl_manifest" "certificate" {
 # gateway
 # ---------------------------------------------------------------
 resource "kubectl_manifest" "gateway" {
+  count = var.gateway_name == "" ? 1 : 0
 
   yaml_body = templatefile("${path.module}/helm-values/gateway.yaml", {
     name = var.virtual_service_name
@@ -36,7 +37,7 @@ resource "kubectl_manifest" "virtual_service" {
     name = var.virtual_service_name
     namespace = var.namespace
     secret_certificate_name = kubectl_manifest.certificate.name
-    gateway_name = kubectl_manifest.gateway.name
+    gateway_name = var.gateway_name != "" ? var.gateway_name : kubectl_manifest.gateway[0].name
     dns_name = var.dns_name
     service_name = var.service_name
     service_port = var.service_port

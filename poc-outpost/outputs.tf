@@ -52,6 +52,12 @@ output "trino_user_password" {
   sensitive   = true
 }
 
+output "superset_admin_password" {
+    value       = length(module.superset) > 0 ? module.superset[0].admin_password : null
+    description = "Le mot de passe admin de Superset"
+    sensitive   = true
+}
+
 
 output "s3_bucket_id_spark_history_server" {
   description = "Spark History server logs S3 bucket ID"

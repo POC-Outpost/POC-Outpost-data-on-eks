@@ -41,6 +41,10 @@ locals {
   spark_history_server_tls = "spark-history-server-tls"
   spark_history_server_name = "sparkhistoryalb4"
 
+  secret_keycloak_spark_history = var.secret_keycloak_spark_history
+  client_keycloak_spark_history = var.client_keycloak_spark_history
+  keycloak_orange_issuer_url = var.keycloak_orange_issuer_url
+
   tags = var.tags
 }
 

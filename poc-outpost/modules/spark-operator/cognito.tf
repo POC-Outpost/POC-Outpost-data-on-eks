@@ -19,6 +19,7 @@ resource "aws_cognito_user_pool_client" "shs" {
   }
 }
 
+# using keycloak instead of Cognito
 resource "helm_release" "oauth2_proxy" {
   name             = "oauth2-proxy"
   namespace        = local.spark_history_server_namespace
@@ -29,27 +30,54 @@ resource "helm_release" "oauth2_proxy" {
 
   values = [
     yamlencode({
-      configFile = null
+          # annotations = {
+          #   "sidecar.istio.io/inject" = "false"
+          # }
+          config = {
 
-      config = {
-        clientID       = aws_cognito_user_pool_client.shs.id
-        clientSecret   = aws_cognito_user_pool_client.shs.client_secret
-        cookieSecret   = base64encode(random_password.cookie_secret.result)
-        cookieSecure   = true
-        provider       = "oidc"
-        oidcIssuerURL  = "https://cognito-idp.us-west-2.amazonaws.com/us-west-2_Qat2OJT3w"
-        redirectURL    = "https://${local.spark_history_server_name}.${local.main_domain}/callback"
-        emailDomains   = ["*"]
-        upstreams      = [
-          "http://spark-history-server.spark-history-server.svc.cluster.local:80"
-        ]
-      }
-      service = {
-        type = "ClusterIP"
-      }
-    })
-  ]
-}
+            clientID       = "${local.client_keycloak_spark_history}"
+            clientSecret   = "${local.secret_keycloak_spark_history}"
+            cookie_secret = "${base64encode(random_password.cookie_secret.result)}"
+            cookieSecure   = true
+            oidcIssuerURL  = "${local.keycloak_orange_issuer_url}"
+            cookie_samesite = "lax"
+
+          }
+          service = {
+            type = "ClusterIP"
+          }
+          extraArgs = {
+            "cookie-secure" = "true"
+            "cookie-samesite" = "lax"
+            "skip-provider-button" = true
+            "ssl-insecure-skip-verify" = false
+          }
+        }),
+
+    <<-EOT
+      config:
+        configFile: |
+          provider = "oidc"
+          oidc_issuer_url = "${local.keycloak_orange_issuer_url}"
+          redirect_url = "https://${local.spark_history_server_name}.${local.main_domain}/oauth2/callback"
+          email_domains = [ "*" ]
+          scope = "openid email profile"
+          cookie_samesite = "lax"
+          upstreams = [ "http://spark-history-server.${local.spark_history_server_namespace}.svc.cluster.local:80" ]
+          pass_access_token = true
+          pass_authorization_header = true
+          pass_user_headers = true
+          set_authorization_header = true
+
+          cookie_domains = "${local.spark_history_server_name}.${local.main_domain}"
+          cookie_refresh = "2m"
+          cookie_expire = "24h"
+
+      service:
+        type: ClusterIP
+    EOT
+      ]
+    }
 
 resource "random_password" "cookie_secret" {
   length  = 16

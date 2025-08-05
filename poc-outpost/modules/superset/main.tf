@@ -19,6 +19,9 @@ locals {
   superset_namespace = "superset"
   superset_name = "supersetalb4"
 
+  trino_password = var.trino_password
+  trino_url = var.trino_url
+
   tags = var.tags
 }
 

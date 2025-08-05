@@ -6,7 +6,7 @@ resource "kubernetes_namespace" "trino" {
 
 resource "random_password" "trino_password" {
   length  = 16
-  special = true
+  special = false
 }
 
 resource "random_password" "trino_communication_encryption" {

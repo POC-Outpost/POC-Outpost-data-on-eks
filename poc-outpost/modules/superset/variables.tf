@@ -66,3 +66,12 @@ variable "security_group_id" {
     type        = string
 }
 
+variable "trino_password" {
+    description = "Password for the Trino user"
+    type        = string
+}
+
+variable "trino_url" {
+    description = "URL for the Trino service"
+    type        = string
+}

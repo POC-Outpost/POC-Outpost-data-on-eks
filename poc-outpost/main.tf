@@ -103,6 +103,9 @@ module "spark-operator" {
   cognito_custom_domain        = local.cognito_custom_domain
   main_domain                  = var.main_domain
   spark_teams                  = var.spark_teams
+  secret_keycloak_spark_history = var.secret_keycloak_spark_history
+  client_keycloak_spark_history = var.client_keycloak_spark_history
+  keycloak_orange_issuer_url = var.keycloak_orange_issuer_url
 
   tags = local.tags
 
@@ -233,6 +236,9 @@ module "superset" {
   db_subnet_group_name = aws_db_subnet_group.private.name
   ec_subnet_group_name = aws_elasticache_subnet_group.private.name
   security_group_id    = module.eks.node_security_group_id
+
+  trino_password = module.trino[0].trino_user_password
+  trino_url = "trinoalb4.orange-eks.com:443"
 
   tags = local.tags
 

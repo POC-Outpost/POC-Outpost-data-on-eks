@@ -1,5 +1,9 @@
 extraenv:
   DEBUG: "true"
+bootstrapScript: |
+  #!/bin/bash
+  if [ ! -f ~/bootstrap ]; then echo "Running Superset with uid {{ .Values.runAsUser }}" > ~/bootstrap; fi
+  pip install Authlib sqlalchemy-trino trino psycopg2-binary trino[sqlalchemy]
 # Superset node configuration
 supersetNode:
   replicaCount: 1
@@ -35,7 +39,13 @@ supersetNode:
      requests:
       cpu: 200m
       memory: 256Mi
-
+  extraConfigs:
+    PRECONFIGURED_DBS:
+      trino:
+        SQLALCHEMY_URI: trino://trino:${trino_password}@${trino_url}/iceberg
+        DATABASE_NAME: Trino
+        ENGINE: trino
+        ENABLED: true
 # Superset Celery worker configuration
 supersetWorker:
   replicaCount: 1
@@ -85,3 +95,36 @@ configOverrides:
 redis:
  enabled: false
 runAsUser: 1000
+
+
+init:
+  # Configure resources
+  # Warning: fab command consumes a lot of ram and can
+  # cause the process to be killed due to OOM if it exceeds limit
+  # Make sure you are giving a strong password for the admin user creation( else make sure you are changing after setup)
+  # Also change the admin email to your own custom email.
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 2048Mi
+    requests:
+      cpu: 200m
+      memory: 512Mi
+  # -- Command
+  # @default -- a `superset_init.sh` command
+  command:
+    - "/bin/sh"
+    - "-c"
+    - ". {{ .Values.configMountPath }}/superset_bootstrap.sh; . {{ .Values.configMountPath }}/superset_init.sh"
+  enabled: true
+  jobAnnotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-delete-policy": "before-hook-creation"
+  loadExamples: false
+  createAdmin: true
+  adminUser:
+    username: admin
+    firstname: superset
+    lastname: admin
+    email: admin@soprasteria.com
+    password: ${admin_password}

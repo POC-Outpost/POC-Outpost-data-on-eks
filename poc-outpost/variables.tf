@@ -50,9 +50,9 @@ variable "domaine_name_route53" {
     "trinoalb4.orange-eks.com",
     "airflowalb4.orange-eks.com",
     "nifi2-otl4.orange-eks.com",
-    "sparkhistoryalb4.orange-eks.com",
     "supersetalb4.orange-eks.com",
     "grafanaalb4.orange-eks.com",
+    "sparkhistoryalb4.orange-eks.com",
   ]
   type = list(string)
 }
@@ -180,4 +180,21 @@ variable "apply_nifi2" {
   type        = bool
   description = "Indicate if new nifi2 module must be applied"
   default     = false
+}
+
+variable "client_keycloak_spark_history" {
+    type        = string
+    description = "Client keycloak Spark History Server"
+    default     = "sparkhistory"
+}
+
+variable "secret_keycloak_spark_history" {
+  type        = string
+  description = "Secret keycloak Spark History Server"
+}
+
+variable "keycloak_orange_issuer_url" {
+  type        = string
+  description = "Keycloak Orange issuer URL"
+  default     = "https://keycloak-otl4.orange-eks.com/realms/orange-eks"
 }

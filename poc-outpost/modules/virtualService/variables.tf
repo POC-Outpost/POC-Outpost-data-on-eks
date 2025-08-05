@@ -33,3 +33,9 @@ variable "service_port" {
     description = "Port of the service to be exposed"
     type        = number
 }
+
+variable "gateway_name" {
+    description = "Name of the gateway to be used"
+    type        = string
+    default     = ""
+}
