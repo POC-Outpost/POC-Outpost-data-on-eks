@@ -37,6 +37,9 @@ module "eks_data_addons" {
         webserver_secret_name = local.airflow_webserver_secret_name
         webserver_default_user_password = random_password.airflow_admin.result
         airflow_oidc_secret = var.airflow_oidc_secret
+        airflow_oidc_client= var.airflow_oidc_client
+        keycloak_domain = var.keycloak_domain
+        keycloak_realm = var.keycloak_realm
       })
     ]
   }
