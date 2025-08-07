@@ -12,4 +12,8 @@ module "nifi2" {
   keycloak_url    = var.keycloak_url
   client_keycloak = var.client_keycloak_nifi
   secret_keycloak = var.secret_keycloak_nifi
+
+  depends_on = [
+    module.utility,  # A utiliser uniquement si installation full, sinon en patch il faut laisser commenté
+  ]
 }

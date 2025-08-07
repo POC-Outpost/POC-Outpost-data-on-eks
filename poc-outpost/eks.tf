@@ -95,7 +95,7 @@ module "eks" {
 
       min_size     = 3
       max_size     = 5
-      desired_size = 3
+      desired_size = 5
 
       bootstrap_extra_args = "--kubelet-extra-args '--node-labels=eks.amazonaws.com/compute-type=ec2'"
 
