@@ -40,7 +40,7 @@ locals {
 locals {
   oauth2proxy_cfg = <<-EOT
     provider = "oidc"
-    oidc_issuer_url = "http://${var.kubeflow_domain}/dex"
+    oidc_issuer_url = "https://${var.kubeflow_domain}/dex"
     scope = "profile email groups openid"
     email_domains = [ "*" ]
     upstreams = [ "static://200" ]
@@ -54,8 +54,8 @@ locals {
     ]
     skip_oidc_discovery = true
     login_url = "/dex/auth"
-    redeem_url = "http://${var.kubeflow_domain}/dex/token"
-    oidc_jwks_url = "http://${var.kubeflow_domain}/dex/keys"
+    redeem_url = "https://${var.kubeflow_domain}/dex/token"
+    oidc_jwks_url = "https://${var.kubeflow_domain}/dex/keys"
     skip_provider_button = false
     provider_display_name = "Dex"
     custom_sign_in_logo = "/custom-theme/kubeflow-logo.svg"
