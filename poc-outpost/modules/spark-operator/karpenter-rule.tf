@@ -9,6 +9,11 @@ resource "kubectl_manifest" "karpenter_node_class" {
       amiSelectorTerms:
         - alias: al2023@latest
       instanceStorePolicy: RAID0
+      metadataOptions:
+        httpEndpoint: enabled
+        httpProtocolIPv6: disabled
+        httpPutResponseHopLimit: 2
+        httpTokens: required
       role: ${local.karpenter_node_iam_role_name}
       subnetSelectorTerms:
         - tags:
