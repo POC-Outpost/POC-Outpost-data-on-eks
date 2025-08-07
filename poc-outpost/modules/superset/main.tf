@@ -22,6 +22,8 @@ locals {
   trino_password = var.trino_password
   trino_url = var.trino_url
 
+  secret_keycloak_superset = var.secret_keycloak_superset
+
   tags = var.tags
 }
 

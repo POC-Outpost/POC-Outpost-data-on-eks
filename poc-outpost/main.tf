@@ -239,6 +239,7 @@ module "superset" {
 
   trino_password = module.trino[0].trino_user_password
   trino_url = "trinoalb4.orange-eks.com:443"
+  secret_keycloak_superset = var.secret_keycloak_superset
 
   tags = local.tags
 

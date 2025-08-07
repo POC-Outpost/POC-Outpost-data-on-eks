@@ -75,3 +75,8 @@ variable "trino_url" {
     description = "URL for the Trino service"
     type        = string
 }
+
+variable "secret_keycloak_superset" {
+    description = "Secret for Keycloak integration with Superset"
+    type        = string
+}

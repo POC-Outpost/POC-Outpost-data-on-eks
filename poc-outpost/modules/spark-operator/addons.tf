@@ -227,7 +227,7 @@ resource "kubectl_manifest" "spark_history_server_cert" {
 
 
 #---------------------------------------------------------------
-# S3 bucket for Spark Event Logs and Example Data
+# S3 bucket for Spark Event Logs
 #---------------------------------------------------------------
 #tfsec:ignore:*
 module "s3_bucket" {

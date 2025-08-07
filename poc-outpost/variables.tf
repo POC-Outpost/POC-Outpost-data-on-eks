@@ -198,3 +198,8 @@ variable "keycloak_orange_issuer_url" {
   description = "Keycloak Orange issuer URL"
   default     = "https://keycloak-otl4.orange-eks.com/realms/orange-eks"
 }
+
+variable "secret_keycloak_superset" {
+  type        = string
+  description = "Secret keycloak Superset"
+}

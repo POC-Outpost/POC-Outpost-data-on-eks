@@ -48,6 +48,13 @@ resource "aws_iam_policy" "spark" {
   policy      = data.aws_iam_policy_document.spark_operator.json
 }
 
+resource "aws_iam_policy" "spark_team_data" {
+  for_each = toset(local.teams)
+  description = "IAM role policy for Spark Job execution"
+  name_prefix = "${local.name}-spark-data-irsa"
+  policy      = data.aws_iam_policy_document.spark_operator_data_team[each.value].json
+}
+
 resource "aws_iam_policy" "s3tables" {
   description = "IAM role policy for S3 Tables Access from Spark Job execution"
   name_prefix = "${local.name}-s3tables-irsa"
@@ -143,7 +150,8 @@ module "spark_team_irsa" {
   role_name      = "${local.name}-${each.value}"
   create_policy  = false
   role_policies = {
-    spark_team_policy = aws_iam_policy.spark.arn
+    spark_team_policy = aws_iam_policy.spark.arn,
+    spark_team_data_policy = aws_iam_policy.spark_team_data[each.value].arn
     s3tables_policy   = aws_iam_policy.s3tables.arn
   }
 
@@ -154,5 +162,69 @@ module "spark_team_irsa" {
       service_account = each.value
     }
   }
+
+}
+
+#---------------------------------------------------------------
+# S3 bucket for Spark data
+#---------------------------------------------------------------
+#tfsec:ignore:*
+module "s3_bucket_data_team" {
+  for_each = toset(local.teams)
+  source  = "../s3-bucket-outpost"
+
+  bucket_name = "${local.name}-spark-data-${each.value}"
+  vpc-id      = local.vpc_id
+  outpost_name = local.outpost_name
+  output_subnet_id = local.output_subnet_id
+  vpc_id = local.vpc_id
+
+  tags = local.tags
+}
+
+#---------------------------------------------------------------
+# IAM policy for Spark data team
+#---------------------------------------------------------------
+data "aws_iam_policy_document" "spark_operator_data_team" {
+  for_each = toset(local.teams)
+  statement {
+    sid       = ""
+    effect    = "Allow"
+    resources = [
+      "${module.s3_bucket_data_team[each.key].s3_access_arn}",
+      "${module.s3_bucket_data_team[each.key].s3_access_arn}/*",
+    ]
+
+    actions = [
+      "s3-outposts:GetObject",
+      "s3-outposts:PutObject",
+      "s3-outposts:DeleteObject",
+      "s3-outposts:ListBucket"
+    ]
+  }
+  statement {
+    sid       = ""
+    effect    = "Allow"
+    resources = [
+      "${module.s3_bucket_data_team[each.key].s3_bucket_arn}",
+      "${module.s3_bucket_data_team[each.key].s3_bucket_arn}/*"
+    ]
+
+    actions = [
+      "s3-outposts:GetObject",
+      "s3-outposts:PutObject",
+      "s3-outposts:DeleteObject",
+      "s3-outposts:ListBucket"
+    ]
+  }
+}
+
+resource "kubectl_manifest" "s3_user_client" {
+  for_each = toset(local.teams)
+  yaml_body = templatefile("${path.module}/helm-values/s3.yaml", {
+    sa_name = kubernetes_service_account_v1.spark_team[each.key].metadata[0].name
+    namespace = kubernetes_namespace_v1.spark_team[each.key].metadata[0].name
+    s3_bucket_name = module.s3_bucket_data_team[each.key].s3_bucket_id
+  })
 
 }

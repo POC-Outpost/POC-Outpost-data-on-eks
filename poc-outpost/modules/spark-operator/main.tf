@@ -49,7 +49,7 @@ locals {
 }
 
 #---------------------------------------------------------------
-# Example IAM policy for Spark job execution
+# IAM policy for Spark job execution on bucket
 #---------------------------------------------------------------
 data "aws_iam_policy_document" "spark_operator" {
   statement {
@@ -57,7 +57,7 @@ data "aws_iam_policy_document" "spark_operator" {
     effect    = "Allow"
     resources = [
       "${module.s3_bucket.s3_access_arn}",
-      "${module.s3_bucket.s3_access_arn}/*"
+      "${module.s3_bucket.s3_access_arn}/*",
     ]
 
     actions = [
