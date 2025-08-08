@@ -1,3 +1,4 @@
+# # module commenté car pas de droit suffisant pour le créer
 # module "managed_grafana" {
 #   source  = "terraform-aws-modules/managed-service-grafana/aws"
 #   version = "1.10.0"

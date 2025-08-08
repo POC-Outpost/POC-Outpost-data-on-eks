@@ -1,7 +1,9 @@
-
-resource "random_password" "admin_password" {
-  length  = 16
+resource "random_password" "secret_key" {
+  length  = 64
   special = false
+  upper            = true
+  lower            = true
+  numeric          = true
 }
 
 module "eks_data_addons" {
@@ -26,7 +28,10 @@ module "eks_data_addons" {
         redis_user = local.superset_name
         redis_host = try(module.elasticache.cluster_cache_nodes[0].address, "failed")
 
-        admin_password = random_password.admin_password.result
+        secret_key = random_password.secret_key.result
+        clientID       = "${local.client_keycloak_superset}"
+        clientSecret   = "${local.secret_keycloak_superset}"
+        oidcIssuerURL  = "${local.keycloak_orange_issuer_url}"
 
         #connecteurs
         trino_password = local.trino_password

@@ -55,3 +55,17 @@ variable "enable_amazon_grafana" {
   type        = bool
 }
 
+variable "secret_keycloak_grafana" {
+    description = "Secret for Keycloak integration with Grafana"
+    type        = string
+}
+
+variable "client_keycloak_grafana" {
+    description = "Client for Keycloak integration with Grafana"
+    type        = string
+}
+
+variable "keycloak_orange_issuer_url" {
+    description = "Keycloak issuer URL for Orange"
+    type        = string
+}

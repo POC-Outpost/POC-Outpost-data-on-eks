@@ -68,13 +68,13 @@ variable "domaine_name_route53_gw_kf" {
 variable "enable_amazon_prometheus" {
   description = "Enable Amazon Prometheus for monitoring"
   type        = bool
-  default     = true
+  default     = false
 }
 
 variable "enable_amazon_grafana" {
   description = "Enable Amazon Grafana for monitoring"
   type        = bool
-  default     = true
+  default     = false
 }
 
 variable "enable_airflow" {
@@ -202,4 +202,21 @@ variable "keycloak_orange_issuer_url" {
 variable "secret_keycloak_superset" {
   type        = string
   description = "Secret keycloak Superset"
+}
+
+variable "client_keycloak_superset" {
+  type        = string
+  description = "Client keycloak Superset"
+  default     = "superset"
+}
+
+variable "secret_keycloak_grafana" {
+  type        = string
+  description = "Secret keycloak Grafana"
+}
+
+variable "client_keycloak_grafana" {
+    type        = string
+    description = "Client keycloak Grafana"
+    default     = "grafana"
 }

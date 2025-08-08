@@ -56,7 +56,15 @@ module "eks_blueprints_addons" {
         amp_irsa            = module.amp_ingest_irsa[0].iam_role_arn
         amp_remotewrite_url = "https://aps-workspaces.${local.region}.amazonaws.com/workspaces/${aws_prometheus_workspace.amp[0].id}/api/v1/remote_write"
         amp_url             = "https://aps-workspaces.${local.region}.amazonaws.com/workspaces/${aws_prometheus_workspace.amp[0].id}"
-      }) : templatefile("${path.module}/helm-values/kube-prometheus.yaml", {})
+      }) : templatefile("${path.module}/helm-values/kube-prometheus.yaml", {
+
+        clientID       = "${local.client_keycloak_grafana}"
+        clientSecret   = "${local.secret_keycloak_grafana}"
+        oidcIssuerURL  = "${local.keycloak_orange_issuer_url}"
+        grafanaName    = "${local.grafana_name}"
+        grafanaNamespace = "${local.grafana_namespace}"
+        domainName = "${local.main_domain}"
+      })
     ]
     chart_version = "48.2.3"
     set_sensitive = [

@@ -80,3 +80,13 @@ variable "secret_keycloak_superset" {
     description = "Secret for Keycloak integration with Superset"
     type        = string
 }
+
+variable "client_keycloak_superset" {
+    description = "Client ID for Keycloak integration with Superset"
+    type        = string
+}
+
+variable "keycloak_orange_issuer_url" {
+    description = "Issuer URL for Keycloak integration with Superset"
+    type        = string
+}

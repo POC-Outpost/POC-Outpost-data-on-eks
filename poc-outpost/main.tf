@@ -134,6 +134,10 @@ module "supervision" {
   cluster_issuer_name = var.cluster_issuer_name
   main_domain         = local.main_domain
 
+  secret_keycloak_grafana = var.secret_keycloak_grafana
+  client_keycloak_grafana = var.client_keycloak_grafana
+  keycloak_orange_issuer_url = var.keycloak_orange_issuer_url
+
   tags = local.tags
 
   depends_on = [
@@ -240,6 +244,8 @@ module "superset" {
   trino_password = module.trino[0].trino_user_password
   trino_url = "trinoalb4.orange-eks.com:443"
   secret_keycloak_superset = var.secret_keycloak_superset
+  client_keycloak_superset = var.client_keycloak_superset
+  keycloak_orange_issuer_url = var.keycloak_orange_issuer_url
 
   tags = local.tags
 

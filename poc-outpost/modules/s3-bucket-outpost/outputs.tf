@@ -13,3 +13,7 @@ output "s3_bucket_arn" {
 output "s3_access_arn" {
     value = aws_s3_access_point.this.arn
 }
+
+output "s3_bucket_name" {
+  value = aws_s3control_bucket.this.bucket
+}

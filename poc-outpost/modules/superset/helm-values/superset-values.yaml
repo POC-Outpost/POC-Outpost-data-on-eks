@@ -3,7 +3,9 @@ extraenv:
 bootstrapScript: |
   #!/bin/bash
   if [ ! -f ~/bootstrap ]; then echo "Running Superset with uid {{ .Values.runAsUser }}" > ~/bootstrap; fi
-  pip install Authlib sqlalchemy-trino trino psycopg2-binary trino[sqlalchemy]
+  pip install psycopg2-binary
+  pip install Authlib sqlalchemy-trino trino trino[sqlalchemy]
+  pip install flask_openid PyJWT
 # Superset node configuration
 supersetNode:
   replicaCount: 1
@@ -29,7 +31,7 @@ supersetNode:
   autoscaling:
     enabled: true
     minReplicas: 1
-    maxReplicas: 100
+    maxReplicas: 5
     targetCPUUtilizationPercentage: 80
 
   resources:
@@ -39,27 +41,20 @@ supersetNode:
      requests:
       cpu: 200m
       memory: 256Mi
-  extraConfigs:
-    PRECONFIGURED_DBS:
-      trino:
-        SQLALCHEMY_URI: trino://trino:${trino_password}@${trino_url}/iceberg
-        DATABASE_NAME: Trino
-        ENGINE: trino
-        ENABLED: true
 # Superset Celery worker configuration
 supersetWorker:
   replicaCount: 1
   autoscaling:
     enabled: true
     minReplicas: 1
-    maxReplicas: 100
+    maxReplicas: 5
     targetCPUUtilizationPercentage: 80
   command:
     - "/bin/sh"
     - "-c"
     - ". {{ .Values.configMountPath }}/superset_bootstrap.sh; celery --app=superset.tasks.celery_app:app worker"
   # -- If true, forces deployment to reload on each upgrade
-  forceReload: false
+  forceReload: true
   # -- Init container
   # @default -- a container waiting for postgres and redis
   initContainers:
@@ -76,27 +71,79 @@ supersetWorker:
 
   resources:
     limits:
-      cpu: 1000m
-      memory: 2048Mi
+      cpu: 2000m
+      memory: 5092Mi
     requests:
-      cpu: 200m
-      memory: 512Mi
+      cpu: 2000m
+      memory: 2048Mi
 
 postgresql:
-  ## Set to false if bringing your own PostgreSQL.
   enabled: false
 
 configOverrides:
    secret: |
-     SECRET_KEY = '5WPuGEgPfGTrk9MCVLFkzNk0fO4hyfsykSrM03fHn1m8d3yQQd4yjyvf'
+     SECRET_KEY = '${secret_key}'
      RATELIMIT_STORAGE_URI = "redis://{{ .Values.supersetNode.connections.redis_host }}:{{ .Values.supersetNode.connections.redis_port }}/3"
+     CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 
+     import jwt
+
+     def user_info(remote, resp):
+         token = resp.get('access_token') or resp.get('id_token')
+         if not token:
+             return {}
+         decoded = jwt.decode(token, options={"verify_signature": False})
+
+         return {
+             'username': decoded.get('preferred_username') or decoded.get('sub') or '',
+             'first_name': decoded.get('given_name') or '',
+             'last_name': decoded.get('family_name') or '',
+             'email': decoded.get('email') or '',
+         }
+
+     from flask_appbuilder.security.manager import AUTH_OAUTH
+     ENABLE_PROXY_FIX = True
+     PREFERRED_URL_SCHEME = 'https'
+     OAUTH_USER_INFO = user_info
+
+     OAUTH_PROVIDERS = [
+        {
+            'name': 'keycloak',
+            'icon': 'fa-address-card',
+            'token_key': 'access_token',
+            'remote_app': {
+                'client_id': '${clientID}',
+                'client_secret': '${clientSecret}',
+                'api_base_url': '${oidcIssuerURL}/protocol/openid-connect',
+                'access_token_url': '${oidcIssuerURL}/protocol/openid-connect/token',
+                'authorize_url': '${oidcIssuerURL}/protocol/openid-connect/auth',
+                'client_kwargs': {
+                    'scope': 'openid email profile',
+                },
+                'server_metadata_url': '${oidcIssuerURL}/.well-known/openid-configuration'
+            },
+        },
+     ]
+
+     AUTH_TYPE = AUTH_OAUTH
+     AUTH_ROLE_PUBLIC = 'Gamma'
+     AUTH_USER_REGISTRATION = True
+     AUTH_USER_REGISTRATION_ROLE = "Gamma"
+     AUTH_ROLES_SYNC_AT_LOGIN = True
+
+     AUTH_ROLES_MAPPING = {
+     "superset_admin": ["Admin"],
+     "superset_editeur" : ["Alpha"],
+     "superset_lecteur" : ["Gamma"]
+     }
+     
 
 redis:
  enabled: false
 runAsUser: 1000
 
 
+## Création d'un compte admin, mais plus besoin car oidc est utilisé
 init:
   # Configure resources
   # Warning: fab command consumes a lot of ram and can
@@ -121,10 +168,49 @@ init:
     "helm.sh/hook": post-install,post-upgrade
     "helm.sh/hook-delete-policy": "before-hook-creation"
   loadExamples: false
-  createAdmin: true
+  createAdmin: false
   adminUser:
     username: admin
-    firstname: superset
-    lastname: admin
-    email: admin@soprasteria.com
-    password: ${admin_password}
+    firstname: Superset
+    lastname: Admin
+    email: admin@superset.com
+    password: admin
+  # -- List of initContainers
+  # @default -- a container waiting for postgres
+  initContainers:
+    - name: wait-for-postgres
+      image: "{{ .Values.initImage.repository }}:{{ .Values.initImage.tag }}"
+      imagePullPolicy: "{{ .Values.initImage.pullPolicy }}"
+      envFrom:
+        - secretRef:
+            name: "{{ tpl .Values.envFromSecret . }}"
+      command:
+        - /bin/sh
+        - -c
+        - dockerize -wait "tcp://$DB_HOST:$DB_PORT" -timeout 120s
+  # -- A Superset init script
+  # @default -- a script to create admin user and initialize roles
+  initscript: |-
+    #!/bin/sh
+    set -eu
+    echo "Upgrading DB schema..."
+    superset db upgrade
+    echo "Initializing roles..."
+    superset init
+    
+    if [ -f "{{ .Values.extraConfigMountPath }}/import_datasources.yaml" ]; then
+      echo "Importing database connections.... "
+      superset import_datasources -p {{ .Values.extraConfigMountPath }}/import_datasources.yaml
+    fi
+
+extraConfigMountPath: /app/configs
+extraConfigs:
+  import_datasources.yaml: |
+    databases:
+      - database_name: trino
+        sqlalchemy_uri: trino://trino:${trino_password}@${trino_url}/iceberg
+        allow_file_upload: true
+        allow_ctas: true
+        allow_cvas: true
+        extra: "{}"
+        tables: []

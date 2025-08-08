@@ -23,6 +23,8 @@ locals {
   trino_url = var.trino_url
 
   secret_keycloak_superset = var.secret_keycloak_superset
+  client_keycloak_superset = var.client_keycloak_superset
+  keycloak_orange_issuer_url = var.keycloak_orange_issuer_url
 
   tags = var.tags
 }

@@ -22,3 +22,24 @@ alertmanager:
 grafana:
   enabled: true
   defaultDashboardsEnabled: true
+  grafana.ini:
+    auth.generic_oauth:
+      enabled: true
+      name: Keycloak
+      login_attribute_path: preferred_username
+      name_attribute_path: preferred_username
+      email_attribute_path: email
+      allow_sign_up: true
+      scopes: profile email openid
+      auth_url: ${oidcIssuerURL}/protocol/openid-connect/auth
+      token_url: ${oidcIssuerURL}/protocol/openid-connect/token
+      api_url: ${oidcIssuerURL}/protocol/openid-connect/userinfo
+      client_id: ${clientID}
+      client_secret: ${clientSecret}
+      role_attribute_path: contains(groups[*], 'grafana-admin') && 'Admin' || contains(groups[*], 'grafana-dev') && 'Editor' || 'Viewer'
+    server:
+      root_url: https://${grafanaName}.${domainName}
+    users:
+      auto_assign_org: true
+      auto_assign_org_role: Viewer  # default org_role
+      auto_assign_org_id: 1

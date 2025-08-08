@@ -2,7 +2,14 @@ output "s3_bucket_id_spark_history_server" {
   description = "Spark History server logs S3 bucket ID"
   value       = module.s3_bucket.s3_bucket_id
 }
-output "test" {
-    description = "Test output to verify module execution"
-    value       =  module.spark_history_server_irsa.iam_role_arn
+
+output "s3_team_bucket_info" {
+  description = "Spark team bucket information"
+  value = {
+    for team, bucket in module.s3_bucket_data_team :
+    team => {
+      name = bucket.s3_bucket_name
+      id   = bucket.s3_bucket_id
+    }
+  }
 }

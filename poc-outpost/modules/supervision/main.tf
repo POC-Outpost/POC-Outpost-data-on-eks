@@ -30,6 +30,10 @@ locals {
   grafana_name = "grafanaalb4"
   grafana_namespace = "kube-prometheus-stack"
 
+  secret_keycloak_grafana = var.secret_keycloak_grafana
+  client_keycloak_grafana = var.client_keycloak_grafana
+  keycloak_orange_issuer_url = var.keycloak_orange_issuer_url
+
 
   azs = slice(data.aws_availability_zones.available.names, 0, 3)
 
