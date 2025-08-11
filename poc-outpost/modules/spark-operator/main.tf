@@ -36,6 +36,9 @@ locals {
   cognito_user_pool_id = var.cognito_user_pool_id
   cognito_custom_domain = var.cognito_custom_domain
 
+  spark_operator_service_account = "spark-operator-controller"
+  spark_operator_namespace       = "spark-operator"
+
   spark_history_server_service_account = "spark-history-server-sa"
   spark_history_server_namespace       = "spark-history-server"
   spark_history_server_tls = "spark-history-server-tls"

@@ -21,4 +21,5 @@ spec:
           command: ["/bin/sh", "-c", "--"]
           args:
             - |
+              yum install -y -q -y tar
               sleep infinity

@@ -22,44 +22,6 @@ module "spark_history_server_irsa" {
     }
   }
 }
-#---------------------------------------------------------------
-# EKS Blueprints Addons
-#---------------------------------------------------------------
-# module "eks_blueprints_addons" {
-#   source  = "aws-ia/eks-blueprints-addons/aws"
-#   version = "~> 1.20"
-#
-#   cluster_name      = local.name
-#   cluster_endpoint  = local.cluster_endpoint
-#   cluster_version   = local.cluster_version
-#   oidc_provider_arn = local.oidc_provider_arn
-#
-#   #---------------------------------------
-#   # AWS for FluentBit - DaemonSet
-#   #---------------------------------------
-#   enable_aws_for_fluentbit = true
-#   aws_for_fluentbit_cw_log_group = {
-#     use_name_prefix   = false
-#     name = "/${local.name}/aws-fluentbit-logs" # Add-on creates this log group
-#     retention_in_days = 30
-#   }
-#   aws_for_fluentbit = {
-#     chart_version = "0.1.34"
-#     s3_bucket_arns = [
-#       module.s3_bucket.s3_bucket_arn,
-#       "${module.s3_bucket.s3_bucket_arn}/*"
-#     ]
-#     values = [
-#       templatefile("${path.module}/helm-values/aws-for-fluentbit-values.yaml", {
-#         region               = local.region,
-#         cloudwatch_log_group = "/${local.name}/aws-fluentbit-logs"
-#         s3_bucket_name       = module.s3_bucket.s3_bucket_id
-#         cluster_name         = local.name
-#       })
-#     ]
-#   }
-#
-# }
 
 #---------------------------------------------------------------
 # Data on EKS Kubernetes Addons
@@ -210,10 +172,51 @@ module "eks_data_addons" {
   depends_on = [module.spark_history_server_irsa]
 }
 
+#---------------------------------------------------------------
+# spark operator IAM - Full access to S3 Outposts on every bucket
+#---------------------------------------------------------------
+module "spark_operator_irsa" {
+  source  = "aws-ia/eks-blueprints-addon/aws"
+  version = "~> 1.0" # ensure to update this to the latest/desired version
+
+  # IAM role for service account (IRSA)
+  create_release = false
+  create_policy  = true
+
+  create_role = true
+  role_name   = local.spark_operator_service_account
+
+  role_policies = { SparkOperator = "arn:aws:iam::aws:policy/AmazonS3OutpostsFullAccess" }
+
+  oidc_providers = {
+    this = {
+      provider_arn    = local.oidc_provider_arn
+      namespace       = local.spark_operator_namespace
+      service_account = local.spark_operator_service_account
+    }
+  }
+}
+
+#---------------------------------------------------------------
+# IRSA module for spark operator
+# ---------------------------------------------------------------
+resource "kubernetes_annotations" "spark_operator_irsa" {
+  api_version = "v1"
+  kind        = "ServiceAccount"
+  metadata {
+    name      = local.spark_operator_service_account
+    namespace = local.spark_operator_namespace
+  }
+
+  annotations = {
+    "eks.amazonaws.com/role-arn" = module.spark_operator_irsa.iam_role_arn
+  }
+}
+
+
 ##
 # spark history server certificat
 ##
-
 resource "kubectl_manifest" "spark_history_server_cert" {
 
   yaml_body = templatefile("${path.module}/helm-values/certificate.yaml", {
