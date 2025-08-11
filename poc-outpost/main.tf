@@ -113,6 +113,12 @@ module "spark-operator" {
 
   tags = local.tags
 
+  providers = {
+    kustomization = kustomization
+    kubernetes    = kubernetes
+    helm          = helm
+  }
+
   depends_on = [
     # module.eks,  # A utiliser uniquement si installation full, sinon en patch il faut laisser commenté
     # module.kafka,  # A utiliser uniquement si installation full, sinon en patch il faut laisser commenté

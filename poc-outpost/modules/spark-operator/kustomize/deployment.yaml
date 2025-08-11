@@ -1,0 +1,129 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    deployment.kubernetes.io/revision: "2"
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"apps/v1","kind":"Deployment","metadata":{"annotations":{"deployment.kubernetes.io/revision":"1","meta.helm.sh/release-name":"spark-operator","meta.helm.sh/release-namespace":"spark-operator"},"labels":{"app.kubernetes.io/component":"controller","app.kubernetes.io/instance":"spark-operator","app.kubernetes.io/managed-by":"Helm","app.kubernetes.io/name":"spark-operator","app.kubernetes.io/version":"2.2.0","helm.sh/chart":"spark-operator-2.2.0"},"name":"spark-operator-controller","namespace":"spark-operator"},"spec":{"progressDeadlineSeconds":600,"replicas":1,"revisionHistoryLimit":10,"selector":{"matchLabels":{"app.kubernetes.io/component":"controller","app.kubernetes.io/instance":"spark-operator","app.kubernetes.io/name":"spark-operator"}},"strategy":{"rollingUpdate":{"maxSurge":"25%","maxUnavailable":"25%"},"type":"RollingUpdate"},"template":{"metadata":{"annotations":{"prometheus.io/path":"/metrics","prometheus.io/port":"8080","prometheus.io/scrape":"true"},"labels":{"app.kubernetes.io/component":"controller","app.kubernetes.io/instance":"spark-operator","app.kubernetes.io/name":"spark-operator"}},"spec":{"automountServiceAccountToken":true,"containers":[{"args":["controller","start","--zap-log-level=info","--namespaces=\"\"","--controller-threads=20","--enable-ui-service=true","--enable-batch-scheduler=true","--default-batch-scheduler=yunikorn","--enable-metrics=true","--metrics-bind-address=:8080","--metrics-endpoint=/metrics","--metrics-prefix=","--metrics-labels=app_type","--metrics-job-start-latency-buckets=30,60,90,120,150,180,210,240,270,300","--leader-election=true","--leader-election-lock-name=spark-operator-controller-lock","--leader-election-lock-namespace=spark-operator","--workqueue-ratelimiter-bucket-qps=50","--workqueue-ratelimiter-bucket-size=500","--workqueue-ratelimiter-max-delay=6h","--driver-pod-creation-grace-period=10s","--max-tracked-executor-per-app=1000"],"image":"ghcr.io/kubeflow/spark-operator/controller:2.2.0","imagePullPolicy":"IfNotPresent","livenessProbe":{"failureThreshold":3,"httpGet":{"path":"/healthz","port":8081,"scheme":"HTTP"},"periodSeconds":10,"successThreshold":1,"timeoutSeconds":1},"name":"spark-operator-controller","ports":[{"containerPort":8080,"name":"metrics","protocol":"TCP"}],"readinessProbe":{"failureThreshold":3,"httpGet":{"path":"/readyz","port":8081,"scheme":"HTTP"},"periodSeconds":10,"successThreshold":1,"timeoutSeconds":1},"resources":{},"securityContext":{"allowPrivilegeEscalation":false,"capabilities":{"drop":["ALL"]},"privileged":false,"readOnlyRootFilesystem":true,"runAsNonRoot":true,"seccompProfile":{"type":"RuntimeDefault"}},"terminationMessagePath":"/dev/termination-log","terminationMessagePolicy":"File","volumeMounts":[{"mountPath":"/tmp","name":"tmp"},{"mountPath":"/opt/spark/jars","name":"spark-jars"}]}],"dnsPolicy":"ClusterFirst","initContainers":[{"command":["sh","-c","cp -r /opt/spark/jars/. /spark-jars/\nwget -P /spark-jars https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/3.4.1/hadoop-aws-3.4.1.jar\nwget -P /spark-jars https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.12.788/aws-java-sdk-bundle-1.12.788.jar\n"],"image":"ghcr.io/kubeflow/spark-operator/controller:2.2.0","name":"init-copy-jars","volumeMounts":[{"mountPath":"/spark-jars","name":"spark-jars"}]}],"restartPolicy":"Always","schedulerName":"default-scheduler","securityContext":{"fsGroup":185},"serviceAccount":"spark-operator-controller","serviceAccountName":"spark-operator-controller","terminationGracePeriodSeconds":30,"volumes":[{"emptyDir":{"sizeLimit":"1Gi"},"name":"tmp"},{"emptyDir":{},"name":"spark-jars"}]}}}}
+    meta.helm.sh/release-name: spark-operator
+    meta.helm.sh/release-namespace: spark-operator
+  labels:
+    app.kubernetes.io/component: controller
+    app.kubernetes.io/instance: spark-operator
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: spark-operator
+    app.kubernetes.io/version: 2.2.0
+    helm.sh/chart: spark-operator-2.2.0
+  name: spark-operator-controller
+  namespace: spark-operator
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: controller
+      app.kubernetes.io/instance: spark-operator
+      app.kubernetes.io/name: spark-operator
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        prometheus.io/path: /metrics
+        prometheus.io/port: "8080"
+        prometheus.io/scrape: "true"
+      labels:
+        app.kubernetes.io/component: controller
+        app.kubernetes.io/instance: spark-operator
+        app.kubernetes.io/name: spark-operator
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: karpenter.sh/capacity-type
+                operator: NotIn
+                values:
+                - on-demand
+      automountServiceAccountToken: true
+      containers:
+      - args:
+        - controller
+        - start
+        - --zap-log-level=info
+        - --namespaces=""
+        - --controller-threads=20
+        - --enable-ui-service=true
+        - --enable-batch-scheduler=true
+        - --default-batch-scheduler=yunikorn
+        - --enable-metrics=true
+        - --metrics-bind-address=:8080
+        - --metrics-endpoint=/metrics
+        - --metrics-prefix=
+        - --metrics-labels=app_type
+        - --metrics-job-start-latency-buckets=30,60,90,120,150,180,210,240,270,300
+        - --leader-election=true
+        - --leader-election-lock-name=spark-operator-controller-lock
+        - --leader-election-lock-namespace=spark-operator
+        - --workqueue-ratelimiter-bucket-qps=50
+        - --workqueue-ratelimiter-bucket-size=500
+        - --workqueue-ratelimiter-max-delay=6h
+        - --driver-pod-creation-grace-period=10s
+        - --max-tracked-executor-per-app=1000
+        image: ghcr.io/kubeflow/spark-operator/controller:2.2.0
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /healthz
+            port: 8081
+            scheme: HTTP
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 1
+        name: spark-operator-controller
+        ports:
+        - containerPort: 8080
+          name: metrics
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /readyz
+            port: 8081
+            scheme: HTTP
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 1
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          privileged: false
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          seccompProfile:
+            type: RuntimeDefault
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /tmp
+          name: tmp
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext:
+        fsGroup: 185
+      serviceAccount: spark-operator-controller
+      serviceAccountName: spark-operator-controller
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - emptyDir:
+          sizeLimit: 1Gi
+        name: tmp

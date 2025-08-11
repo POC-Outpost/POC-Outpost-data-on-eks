@@ -17,8 +17,22 @@ spec:
           - -c
           - |
             cp -r /opt/spark/jars/. /spark-jars/
-            wget -P /spark-jars https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/3.4.1/hadoop-aws-3.4.1.jar
-            wget -P /spark-jars https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.12.788/aws-java-sdk-bundle-1.12.788.jar
+            wget -P /spark-jars https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/3.4.1/hadoop-aws-3.4.1.jar            
+            wget -P /spark-jars https://repo1.maven.org/maven2/software/amazon/awssdk/auth/2.29.44/auth-2.29.44.jar
+            wget -P /spark-jars https://repo1.maven.org/maven2/software/amazon/awssdk/sdk-core/2.29.44/sdk-core-2.29.44.jar
+            wget -P /spark-jars https://repo1.maven.org/maven2/software/amazon/awssdk/aws-core/2.29.44/aws-core-2.29.44.jar
+            wget -P /spark-jars https://repo1.maven.org/maven2/software/amazon/awssdk/transfer/2.29.44/transfer-2.29.44.jar
+            wget -P /spark-jars https://repo1.maven.org/maven2/software/amazon/awssdk/regions/2.29.44/regions-2.29.44.jar
+            wget -P /spark-jars https://repo1.maven.org/maven2/software/amazon/awssdk/s3/2.29.44/s3-2.29.44.jar
+            wget -P /spark-jars https://repo1.maven.org/maven2/software/amazon/awssdk/s3-transfer-manager/2.29.44/s3-transfer-manager-2.29.44.jar
+            wget -P /spark-jars https://repo1.maven.org/maven2/software/amazon/awssdk/s3outposts/2.29.44/s3outposts-2.29.44.jar
+            wget -P /spark-jars https://repo1.maven.org/maven2/software/amazon/awssdk/sts/2.29.44/sts-2.29.44.jar
+            wget -P /spark-jars https://repo1.maven.org/maven2/software/amazon/awssdk/identity-spi/2.29.44/identity-spi-2.29.44.jar
+            
+            # wget -P /spark-jars https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/2.9.2/hadoop-aws-2.9.2.jar
+            # wget -P /spark-jars https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-core/1.11.271/aws-java-sdk-core-1.11.271.jar
+            # wget -P /spark-jars https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-s3/1.11.271/aws-java-sdk-s3-1.11.271.jar
+
         volumeMounts:
         - name: spark-jars
           mountPath: /spark-jars
