@@ -55,6 +55,13 @@ resource "aws_iam_policy" "spark_team_data" {
   policy      = data.aws_iam_policy_document.spark_operator_data_team[each.value].json
 }
 
+resource "aws_iam_policy" "spark_team_utility" {
+  for_each = toset(local.teams)
+  description = "IAM role policy for Spark Job execution"
+  name_prefix = "${local.name}-spark-utility-irsa"
+  policy      = data.aws_iam_policy_document.spark_operator_utility_team[each.value].json
+}
+
 resource "aws_iam_policy" "s3tables" {
   description = "IAM role policy for S3 Tables Access from Spark Job execution"
   name_prefix = "${local.name}-s3tables-irsa"
@@ -152,6 +159,7 @@ module "spark_team_irsa" {
   role_policies = {
     spark_team_policy = aws_iam_policy.spark.arn,
     spark_team_data_policy = aws_iam_policy.spark_team_data[each.value].arn
+    spark_team_utility_policy = aws_iam_policy.spark_team_utility[each.value].arn
     s3tables_policy   = aws_iam_policy.s3tables.arn
   }
 
@@ -208,6 +216,60 @@ data "aws_iam_policy_document" "spark_operator_data_team" {
     resources = [
       "${module.s3_bucket_data_team[each.key].s3_bucket_arn}",
       "${module.s3_bucket_data_team[each.key].s3_bucket_arn}/*"
+    ]
+
+    actions = [
+      "s3-outposts:GetObject",
+      "s3-outposts:PutObject",
+      "s3-outposts:DeleteObject",
+      "s3-outposts:ListBucket"
+    ]
+  }
+}
+
+#---------------------------------------------------------------
+# S3 bucket for Spark team utility (jar, conf, ..)
+#---------------------------------------------------------------
+#tfsec:ignore:*
+module "s3_bucket_utility_team" {
+  for_each = toset(local.teams)
+  source  = "../s3-bucket-outpost"
+
+  bucket_name = "${local.name}-spark-util-${each.value}"
+  vpc-id      = local.vpc_id
+  outpost_name = local.outpost_name
+  output_subnet_id = local.output_subnet_id
+  vpc_id = local.vpc_id
+
+  tags = local.tags
+}
+
+#---------------------------------------------------------------
+# IAM policy for Spark team utility (jar, conf, ..)
+#---------------------------------------------------------------
+data "aws_iam_policy_document" "spark_operator_utility_team" {
+  for_each = toset(local.teams)
+  statement {
+    sid       = ""
+    effect    = "Allow"
+    resources = [
+      "${module.s3_bucket_utility_team[each.key].s3_access_arn}",
+      "${module.s3_bucket_utility_team[each.key].s3_access_arn}/*",
+    ]
+
+    actions = [
+      "s3-outposts:GetObject",
+      "s3-outposts:PutObject",
+      "s3-outposts:DeleteObject",
+      "s3-outposts:ListBucket"
+    ]
+  }
+  statement {
+    sid       = ""
+    effect    = "Allow"
+    resources = [
+      "${module.s3_bucket_utility_team[each.key].s3_bucket_arn}",
+      "${module.s3_bucket_utility_team[each.key].s3_bucket_arn}/*"
     ]
 
     actions = [

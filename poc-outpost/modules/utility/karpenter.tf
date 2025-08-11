@@ -1,4 +1,6 @@
 module "karpenter" {
+  count = var.enable_karpenter ? 1 : 0
+
   source  = "terraform-aws-modules/eks/aws//modules/karpenter"
   version = "~> 20.24"
 
@@ -18,6 +20,8 @@ module "karpenter" {
 
 # Deploy Karpenter using Helm
 resource "helm_release" "karpenter" {
+  count = var.enable_karpenter ? 1 : 0
+
   namespace           = "kube-system"
   name                = "karpenter"
   repository          = "oci://public.ecr.aws/karpenter"
@@ -30,11 +34,11 @@ resource "helm_release" "karpenter" {
   values = [
     <<-EOT
     serviceAccount:
-      name: ${module.karpenter.service_account}
+      name: ${module.karpenter[0].service_account}
     settings:
       clusterName: ${local.name}
       clusterEndpoint: ${local.cluster_endpoint}
-      interruptionQueue: ${module.karpenter.queue_name}
+      interruptionQueue: ${module.karpenter[0].queue_name}
     tolerations:
       - key: CriticalAddonsOnly
         operator: Exists
@@ -63,6 +67,8 @@ resource "helm_release" "karpenter" {
 # We give the node role access to S3tables to work around this limitation.
 #---------------------------------------------------------------
 resource "aws_iam_policy" "s3tables_policy" {
+  count = var.enable_karpenter ? 1 : 0
+
   name_prefix = "${local.name}-s3tables"
   path        = "/"
   description = "S3Tables Metadata access for Nodes"

@@ -78,3 +78,9 @@ variable "output_subnet_id" {
   type        = string
   description = "Outpost subnet id"
 }
+
+variable "enable_karpenter" {
+    description = "Enable Karpenter for node management"
+    type        = bool
+    default     = false
+}

@@ -73,6 +73,8 @@ module "utility" {
   main_domain           = var.main_domain
   zone_id               = local.zone_id
 
+  enable_karpenter = var.enable_karpenter
+
   tags = local.tags
 
   depends_on = [
@@ -89,23 +91,25 @@ module "spark-operator" {
   source = "./modules/spark-operator"
   count  = var.enable_spark_operator ? 1 : 0
 
-  name                         = local.name
-  region                       = local.region
-  vpc_id                       = module.vpc.vpc_id
-  oidc_provider_arn            = module.eks.oidc_provider_arn
-  cluster_version              = var.eks_cluster_version
-  cluster_endpoint             = module.eks.cluster_endpoint
-  karpenter_node_iam_role_name = module.utility.karpenter_node_iam_role_name
-  outpost_name                 = var.outpost_name
-  output_subnet_id             = module.outpost_subnet.subnet_id[0]
-  cluster_issuer_name          = var.cluster_issuer_name
-  cognito_user_pool_id         = module.utility.cognito_user_pool_id
-  cognito_custom_domain        = local.cognito_custom_domain
-  main_domain                  = var.main_domain
-  spark_teams                  = var.spark_teams
+  name                          = local.name
+  region                        = local.region
+  vpc_id                        = module.vpc.vpc_id
+  oidc_provider_arn             = module.eks.oidc_provider_arn
+  cluster_version               = var.eks_cluster_version
+  cluster_endpoint              = module.eks.cluster_endpoint
+  karpenter_node_iam_role_name  = module.utility.karpenter_node_iam_role_name
+  outpost_name                  = var.outpost_name
+  output_subnet_id              = module.outpost_subnet.subnet_id[0]
+  cluster_issuer_name           = var.cluster_issuer_name
+  cognito_user_pool_id          = module.utility.cognito_user_pool_id
+  cognito_custom_domain         = local.cognito_custom_domain
+  main_domain                   = var.main_domain
+  spark_teams                   = var.spark_teams
   secret_keycloak_spark_history = var.secret_keycloak_spark_history
   client_keycloak_spark_history = var.client_keycloak_spark_history
-  keycloak_orange_issuer_url = var.keycloak_orange_issuer_url
+  keycloak_orange_issuer_url    = var.keycloak_orange_issuer_url
+
+  enable_karpenter = var.enable_karpenter
 
   tags = local.tags
 
@@ -134,8 +138,8 @@ module "supervision" {
   cluster_issuer_name = var.cluster_issuer_name
   main_domain         = local.main_domain
 
-  secret_keycloak_grafana = var.secret_keycloak_grafana
-  client_keycloak_grafana = var.client_keycloak_grafana
+  secret_keycloak_grafana    = var.secret_keycloak_grafana
+  client_keycloak_grafana    = var.client_keycloak_grafana
   keycloak_orange_issuer_url = var.keycloak_orange_issuer_url
 
   tags = local.tags
@@ -162,10 +166,10 @@ module "airflow" {
   main_domain           = var.main_domain
   outpost_name          = var.outpost_name
   output_subnet_id      = module.outpost_subnet.subnet_id[0]
-  spark_teams = var.spark_teams
-  airflow_oidc_secret = var.airflow_oidc_secret
-  keycloak_domain = var.keycloak_url
-  tags = local.tags
+  spark_teams           = var.spark_teams
+  airflow_oidc_secret   = var.airflow_oidc_secret
+  keycloak_domain       = var.keycloak_url
+  tags                  = local.tags
 
   depends_on = [
     #module.supervision,  # A utiliser uniquement si installation full, sinon en patch il faut laisser commenté
@@ -198,6 +202,8 @@ module "trino" {
   cluster_issuer_name   = var.cluster_issuer_name
   zone_id               = local.zone_id
   main_domain           = var.main_domain
+
+  enable_karpenter = var.enable_karpenter
 
   depends_on = [
     #module.supervision,  # A utiliser uniquement si installation full, sinon en patch il faut laisser commenté
@@ -241,10 +247,10 @@ module "superset" {
   ec_subnet_group_name = aws_elasticache_subnet_group.private.name
   security_group_id    = module.eks.node_security_group_id
 
-  trino_password = module.trino[0].trino_user_password
-  trino_url = "trinoalb4.orange-eks.com:443"
-  secret_keycloak_superset = var.secret_keycloak_superset
-  client_keycloak_superset = var.client_keycloak_superset
+  trino_password             = module.trino[0].trino_user_password
+  trino_url                  = "trinoalb4.orange-eks.com:443"
+  secret_keycloak_superset   = var.secret_keycloak_superset
+  client_keycloak_superset   = var.client_keycloak_superset
   keycloak_orange_issuer_url = var.keycloak_orange_issuer_url
 
   tags = local.tags
@@ -252,4 +258,11 @@ module "superset" {
   depends_on = [
     # module.utility,  # A utiliser uniquement si installation full, sinon en patch il faut laisser commenté
   ]
+}
+
+module "s3-user" {
+  count  = var.enable_s3_user ? 1 : 0
+  source = "./modules/s3-user"
+
+  oidc_provider_arn   = module.eks.oidc_provider_arn
 }

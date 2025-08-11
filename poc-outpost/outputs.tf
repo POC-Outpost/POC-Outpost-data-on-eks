@@ -59,5 +59,5 @@ output "s3_bucket_id_spark_history_server" {
 
 output "s3_team_bucket_info" {
   description = "Spark team bucket information"
-  value = length(module.spark-operator) > 0 ? module.spark-operator[0].s3_team_bucket_info : null
+  value       = length(module.spark-operator) > 0 ? module.spark-operator[0].s3_team_bucket_info : null
 }

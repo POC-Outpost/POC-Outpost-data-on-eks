@@ -4,12 +4,18 @@ output "s3_bucket_id_spark_history_server" {
 }
 
 output "s3_team_bucket_info" {
-  description = "Spark team bucket information"
+  description = "Spark team buckets: data and logs"
   value = {
-    for team, bucket in module.s3_bucket_data_team :
+    for team in keys(module.s3_bucket_data_team) :
     team => {
-      name = bucket.s3_bucket_name
-      id   = bucket.s3_bucket_id
+      data_bucket = {
+        name = module.s3_bucket_data_team[team].s3_bucket_name
+        id   = module.s3_bucket_data_team[team].s3_bucket_id
+      }
+      utility_bucket = {
+        name = module.s3_bucket_utility_team[team].s3_bucket_name
+        id   = module.s3_bucket_utility_team[team].s3_bucket_id
+      }
     }
   }
 }

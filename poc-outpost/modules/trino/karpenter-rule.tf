@@ -1,4 +1,6 @@
 resource "kubectl_manifest" "karpenter_node_class" {
+  count = var.enable_karpenter ? 1 : 0
+
   yaml_body = <<-YAML
     apiVersion: karpenter.k8s.aws/v1
     kind: EC2NodeClass
@@ -35,6 +37,8 @@ resource "kubectl_manifest" "karpenter_node_class" {
 
 # Create a Karpenter NodePool using the AL2023 NodeClass
 resource "kubectl_manifest" "karpenter_node_pool" {
+  count = var.enable_karpenter ? 1 : 0
+
   yaml_body = <<-YAML
     apiVersion: karpenter.sh/v1
     kind: NodePool

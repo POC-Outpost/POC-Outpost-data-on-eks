@@ -25,6 +25,8 @@ locals {
   secret_keycloak_superset = var.secret_keycloak_superset
   client_keycloak_superset = var.client_keycloak_superset
   keycloak_orange_issuer_url = var.keycloak_orange_issuer_url
+  url_part    = split("/", local.keycloak_orange_issuer_url)
+  realName = local.url_part[length(local.url_part) - 1]
 
   tags = var.tags
 }

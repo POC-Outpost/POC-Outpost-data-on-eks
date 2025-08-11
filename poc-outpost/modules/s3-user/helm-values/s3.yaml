@@ -1,0 +1,24 @@
+# deploiement pour permettre d'ajouter des fichiers dans le bucket
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: client-awscli
+  namespace: ${namespace}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: client-awscli
+  template:
+    metadata:
+      labels:
+        app: client-awscli
+    spec:
+      serviceAccountName: ${sa_name}
+      containers:
+        - name: awscli
+          image: amazon/aws-cli:latest
+          command: ["/bin/sh", "-c", "--"]
+          args:
+            - |
+              sleep infinity

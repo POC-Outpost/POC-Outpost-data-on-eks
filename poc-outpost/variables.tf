@@ -101,10 +101,23 @@ variable "enable_spark_operator" {
   default     = true
 }
 
+# Desable Karpenter by default, as it requires more node and outpost does not have enough resources
+variable "enable_karpenter" {
+  description = "Enable Karpenter for node management"
+  type        = bool
+  default     = false
+}
+
 variable "enable_superset" {
   description = "Enable Apache Superset"
   type        = bool
   default     = true
+}
+
+variable "enable_s3_user" {
+    description = "Enable S3 User for data access"
+    type        = bool
+    default     = true
 }
 
 variable "cluster_issuer_name" {
@@ -183,9 +196,9 @@ variable "apply_nifi2" {
 }
 
 variable "client_keycloak_spark_history" {
-    type        = string
-    description = "Client keycloak Spark History Server"
-    default     = "sparkhistory"
+  type        = string
+  description = "Client keycloak Spark History Server"
+  default     = "sparkhistory"
 }
 
 variable "secret_keycloak_spark_history" {
@@ -216,7 +229,7 @@ variable "secret_keycloak_grafana" {
 }
 
 variable "client_keycloak_grafana" {
-    type        = string
-    description = "Client keycloak Grafana"
-    default     = "grafana"
+  type        = string
+  description = "Client keycloak Grafana"
+  default     = "grafana"
 }

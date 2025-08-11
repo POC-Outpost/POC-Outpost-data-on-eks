@@ -88,3 +88,9 @@ variable "keycloak_orange_issuer_url" {
     description = "Keycloak issuer URL for Orange"
     type        = string
 }
+
+variable "enable_karpenter" {
+  description = "Enable Karpenter for node management"
+  type        = bool
+  default     = false
+}

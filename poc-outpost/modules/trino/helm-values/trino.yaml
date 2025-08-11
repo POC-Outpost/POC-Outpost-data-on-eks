@@ -140,9 +140,9 @@ worker:
     limits:
       cpu: "7000m"
       memory: 50Gi
-  nodeSelector:
-    NodePool: karpenter
-    karpenter.sh/capacity-type: "on-demand"
+#  nodeSelector:
+#    NodePool: karpenter
+#    karpenter.sh/capacity-type: "on-demand"
   topologySpreadConstraints:
     - maxSkew: 1
       topologyKey: kubernetes.io/hostname

@@ -57,3 +57,8 @@ variable "main_domain" {
   description = "Main domain for the cluster"
   type        = string
 }
+
+variable "enable_karpenter" {
+    description = "Enable Karpenter for node management"
+    type        = bool
+}

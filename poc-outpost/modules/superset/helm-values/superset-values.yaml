@@ -35,10 +35,10 @@ supersetNode:
     targetCPUUtilizationPercentage: 80
 
   resources:
-     limits:
+    limits:
       cpu: 200m
       memory: 256Mi
-     requests:
+    requests:
       cpu: 200m
       memory: 256Mi
 # Superset Celery worker configuration
@@ -81,65 +81,67 @@ postgresql:
   enabled: false
 
 configOverrides:
-   secret: |
-     SECRET_KEY = '${secret_key}'
-     RATELIMIT_STORAGE_URI = "redis://{{ .Values.supersetNode.connections.redis_host }}:{{ .Values.supersetNode.connections.redis_port }}/3"
-     CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
+  secret: |
+    SECRET_KEY = '${secret_key}'
+    RATELIMIT_STORAGE_URI = "redis://{{ .Values.supersetNode.connections.redis_host }}:{{ .Values.supersetNode.connections.redis_port }}/3"
+    CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
+    
+    import jwt
+    from flask_appbuilder.security.manager import AUTH_OAUTH
+    
+    def user_info(remote, resp):
+        token = resp.get('access_token') or resp.get('id_token')
+        if not token:
+            return {}
+        decoded = jwt.decode(token, options={"verify_signature": False})
+    
+        return {
+            'username': decoded.get('preferred_username') or decoded.get('sub') or '',
+            'first_name': decoded.get('given_name') or '',
+            'last_name': decoded.get('family_name') or '',
+            'email': decoded.get('email') or '',
+        }
+    
+    ENABLE_PROXY_FIX = True
+    PREFERRED_URL_SCHEME = 'https'
+    OAUTH_USER_INFO = user_info
+    OIDC_ROLE_CLAIM = "groups"
+    
+    OAUTH_PROVIDERS = [
+       {
+           'name': 'keycloak',
+           'icon': 'fa-address-card',
+           'token_key': 'access_token',
+           'remote_app': {
+               'client_id': '${clientID}',
+               'client_secret': '${clientSecret}',
+               'api_base_url': '${oidcIssuerURL}/protocol/openid-connect',
+               'access_token_url': '${oidcIssuerURL}/protocol/openid-connect/token',
+               'authorize_url': '${oidcIssuerURL}/protocol/openid-connect/auth',
+               'client_kwargs': {
+                   'scope': 'openid email profile',
+               },
+               'server_metadata_url': '${oidcIssuerURL}/.well-known/openid-configuration'
+           },
+       },
+    ]
+    
+    AUTH_TYPE = AUTH_OAUTH
+    AUTH_ROLE_PUBLIC = 'Gamma'
+    AUTH_USER_REGISTRATION = True
+    AUTH_USER_REGISTRATION_ROLE = "Gamma"
+    AUTH_ROLES_SYNC_AT_LOGIN = True
+    
+    AUTH_ROLES_MAPPING = {
+    "superset_admin": ["Admin"],
+    "superset_editeur" : ["Alpha"],
+    "superset_lecteur" : ["Gamma"]
+    }
+    FAB_UPDATE_PERMS = False
 
-     import jwt
-
-     def user_info(remote, resp):
-         token = resp.get('access_token') or resp.get('id_token')
-         if not token:
-             return {}
-         decoded = jwt.decode(token, options={"verify_signature": False})
-
-         return {
-             'username': decoded.get('preferred_username') or decoded.get('sub') or '',
-             'first_name': decoded.get('given_name') or '',
-             'last_name': decoded.get('family_name') or '',
-             'email': decoded.get('email') or '',
-         }
-
-     from flask_appbuilder.security.manager import AUTH_OAUTH
-     ENABLE_PROXY_FIX = True
-     PREFERRED_URL_SCHEME = 'https'
-     OAUTH_USER_INFO = user_info
-
-     OAUTH_PROVIDERS = [
-        {
-            'name': 'keycloak',
-            'icon': 'fa-address-card',
-            'token_key': 'access_token',
-            'remote_app': {
-                'client_id': '${clientID}',
-                'client_secret': '${clientSecret}',
-                'api_base_url': '${oidcIssuerURL}/protocol/openid-connect',
-                'access_token_url': '${oidcIssuerURL}/protocol/openid-connect/token',
-                'authorize_url': '${oidcIssuerURL}/protocol/openid-connect/auth',
-                'client_kwargs': {
-                    'scope': 'openid email profile',
-                },
-                'server_metadata_url': '${oidcIssuerURL}/.well-known/openid-configuration'
-            },
-        },
-     ]
-
-     AUTH_TYPE = AUTH_OAUTH
-     AUTH_ROLE_PUBLIC = 'Gamma'
-     AUTH_USER_REGISTRATION = True
-     AUTH_USER_REGISTRATION_ROLE = "Gamma"
-     AUTH_ROLES_SYNC_AT_LOGIN = True
-
-     AUTH_ROLES_MAPPING = {
-     "superset_admin": ["Admin"],
-     "superset_editeur" : ["Alpha"],
-     "superset_lecteur" : ["Gamma"]
-     }
-     
 
 redis:
- enabled: false
+  enabled: false
 runAsUser: 1000
 
 
@@ -197,6 +199,9 @@ init:
     superset db upgrade
     echo "Initializing roles..."
     superset init
+    
+    echo "upgrade database..."
+    superset db upgrade head
     
     if [ -f "{{ .Values.extraConfigMountPath }}/import_datasources.yaml" ]; then
       echo "Importing database connections.... "
