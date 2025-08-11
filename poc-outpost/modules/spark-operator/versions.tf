@@ -14,6 +14,9 @@ terraform {
       source  = "hashicorp/helm"
       version = "~> 2.17"
     }
+    kustomization = {
+      source = "kbst/kustomization"
+    }    
     kubectl = {
       source  = "alekc/kubectl"
       version = ">= 1.14.0"
