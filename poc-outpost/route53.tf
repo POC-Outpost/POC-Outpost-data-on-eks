@@ -33,6 +33,7 @@ locals {
     if lb.load_balancer_type == "network"
     && lookup(lb.tags, "elbv2.k8s.aws/cluster", null) == var.name
     && !can(regex("kubeflow", lookup(lb.tags, "service.k8s.aws/stack", "")))
+    && !can(regex("devistio", lookup(lb.tags, "service.k8s.aws/stack", "")))
   ]
   selected_nlb_arn = try(local.nlb_arns[0], null)
   selected_nlb     = try(data.aws_lb.all_details[local.selected_nlb_arn], null)
