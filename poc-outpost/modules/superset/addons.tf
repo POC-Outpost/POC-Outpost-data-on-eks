@@ -17,6 +17,11 @@ module "eks_data_addons" {
   #---------------------------------------
   enable_superset = true
   superset_helm_config = {
+
+    name             = "superset"
+    repository       = "https://apache.github.io/superset"
+    chart            = "superset"
+    version = "0.14.2"
     values = [
       templatefile("${path.module}/helm-values/superset-values.yaml", {
 
