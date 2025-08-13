@@ -181,6 +181,7 @@ catalogs:
   iceberg: |
     connector.name=iceberg
     iceberg.catalog.type=jdbc
+    iceberg.register-table-procedure.enabled=true
     iceberg.jdbc-catalog.catalog-name=iceberg
     iceberg.jdbc-catalog.driver-class=org.postgresql.Driver
     iceberg.jdbc-catalog.connection-url=${trino_db_url}
