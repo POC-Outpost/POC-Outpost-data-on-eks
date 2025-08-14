@@ -94,10 +94,15 @@ module "eks" {
       instance_type = "r5.4xlarge" # r5.2xlarge non disponible sur cet outpost
 
       min_size     = 3
-      max_size     = 5
-      desired_size = 5
+      max_size     = 10
+      desired_size = 6
 
-      bootstrap_extra_args = "--kubelet-extra-args '--node-labels=eks.amazonaws.com/compute-type=ec2'"
+      autoscaling_group_tags = {
+        "k8s.io/cluster-autoscaler/enabled"            = "true"
+        "k8s.io/cluster-autoscaler/${local.name}" = "owned"
+      }
+
+      bootstrap_extra_args = "--kubelet-extra-args '--node-labels=eks.amazonaws.com/compute-type=ec2 --node-group-auto-discovery=asg:tag=k8s.io/cluster-autoscaler/enabled,k8s.io/cluster-autoscaler/${local.name}'"
 
       block_device_mappings = {
         xvda = {

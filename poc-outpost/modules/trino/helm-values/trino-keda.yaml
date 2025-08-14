@@ -6,7 +6,7 @@ metadata:
 spec:
   scaleTargetRef:
     name: trino-worker
-  idleReplicaCount: 0
+  idleReplicaCount: 1
   minReplicaCount: 1
   maxReplicaCount: 5
   pollingInterval: 30  # Seconds

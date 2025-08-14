@@ -28,13 +28,13 @@ spec:
     resources:
       requests:
         memory: 10Gi # origine 58Gi
-        cpu: "2" # origine "6"
+        cpu: "1" # origine "6"
       limits:
         memory: 20Gi #origine 64Gi
-        cpu: "3" # origine "8"
+        cpu: "2" # origine "8"
     jvmOptions:
-      "-Xmx": "3g"  # origine "6g"
-      "-Xms": "2g"  # origine "4g"
+      "-Xmx": "2g"  # origine "6g"
+      "-Xms": "1g"  # origine "4g"
     storage:
       type: jbod
       volumes:

@@ -102,7 +102,7 @@ coordinator:
       initialHashPartitions: 100
   resources:
     requests:
-      cpu: "4000m"     # Reduced CPU request
+      cpu: "2000m"     # Reduced CPU request
       memory: 20Gi     # Reduced memory request
     limits:
       cpu: "6000m"     # Higher limit for spikes
@@ -135,11 +135,11 @@ worker:
       maxMemoryPerNode: "35GB"  # ~80% of maxHeapSize
   resources:
     requests:
-      cpu: "6000m"  # Leave 3000m for system/DaemonSets
-      memory: 50Gi  # Leave 16Gi for system/DaemonSets
+      cpu: "4000m"  # Leave 3000m for system/DaemonSets
+      memory: 30Gi  # Leave 16Gi for system/DaemonSets
     limits:
-      cpu: "7000m"
-      memory: 50Gi
+      cpu: "4000m"
+      memory: 30Gi
 #  nodeSelector:
 #    NodePool: karpenter
 #    karpenter.sh/capacity-type: "on-demand"
