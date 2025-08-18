@@ -6,14 +6,11 @@ metadata:
 spec:
   scaleTargetRef:
     name: trino-worker
-  idleReplicaCount: 1
+  #idleReplicaCount: 0
   minReplicaCount: 1
   maxReplicaCount: 5
   pollingInterval: 30  # Seconds
   cooldownPeriod: 600 # Seconds
-  fallback:
-    failureThreshold: 3
-    replicas: 5
   advanced:
     horizontalPodAutoscalerConfig:
       behavior:

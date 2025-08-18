@@ -93,9 +93,9 @@ module "eks" {
       ami_type      = "AL2023_x86_64_STANDARD"
       instance_type = "r5.4xlarge" # r5.2xlarge non disponible sur cet outpost
 
-      min_size     = 3
+      min_size     = 5
       max_size     = 10
-      desired_size = 6
+      desired_size = 5
 
       autoscaling_group_tags = {
         "k8s.io/cluster-autoscaler/enabled"            = "true"

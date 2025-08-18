@@ -102,7 +102,7 @@ coordinator:
       initialHashPartitions: 100
   resources:
     requests:
-      cpu: "2000m"     # Reduced CPU request
+      cpu: "4000m"     # Reduced CPU request
       memory: 20Gi     # Reduced memory request
     limits:
       cpu: "6000m"     # Higher limit for spikes
@@ -121,7 +121,7 @@ worker:
   labels:
     kyverno.io/skip-affinity: "true"
   jvm:
-    maxHeapSize: "45G"  # ~80% of container memory (110Gi)
+    maxHeapSize: "89G"  # ~80% of container memory (110Gi)
     extraArguments:
       - "-XX:+UseG1GC"
       - "-XX:G1HeapRegionSize=32M"
@@ -132,14 +132,14 @@ worker:
       - "-XX:+UseContainerSupport"
   config:
     query:
-      maxMemoryPerNode: "35GB"  # ~80% of maxHeapSize
+      maxMemoryPerNode: "71GB"  # ~80% of maxHeapSize
   resources:
     requests:
-      cpu: "4000m"  # Leave 3000m for system/DaemonSets
-      memory: 30Gi  # Leave 16Gi for system/DaemonSets
+      cpu: "8000m"  # Leave 3000m for system/DaemonSets
+      memory: 112Gi  # Leave 16Gi for system/DaemonSets
     limits:
-      cpu: "4000m"
-      memory: 30Gi
+      cpu: "14000m"
+      memory: 112Gi
 #  nodeSelector:
 #    NodePool: karpenter
 #    karpenter.sh/capacity-type: "on-demand"
