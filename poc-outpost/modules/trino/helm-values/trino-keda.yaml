@@ -9,13 +9,13 @@ spec:
   #idleReplicaCount: 0
   minReplicaCount: 1
   maxReplicaCount: 5
-  pollingInterval: 30  # Seconds
-  cooldownPeriod: 600 # Seconds
+  pollingInterval: 10  # Seconds
+  cooldownPeriod: 300 # Seconds
   advanced:
     horizontalPodAutoscalerConfig:
       behavior:
         scaleDown:
-          stabilizationWindowSeconds: 600
+          stabilizationWindowSeconds: 300
           policies:
           - type: Pods
             value: 1
@@ -25,7 +25,7 @@ spec:
           policies:
           - type: Pods
             value: 1
-            periodSeconds: 120
+            periodSeconds: 20
   triggers:
   - type: cpu
     metricType: Utilization
