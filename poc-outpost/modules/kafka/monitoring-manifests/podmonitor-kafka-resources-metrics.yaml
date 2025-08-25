@@ -5,6 +5,7 @@ metadata:
   namespace: kafka
   labels:
     app: strimzi
+    release: kube-prometheus-stack
 spec:
   selector:
     matchExpressions:
